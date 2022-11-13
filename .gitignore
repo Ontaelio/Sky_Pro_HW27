@@ -1,0 +1,8 @@
+venv/
+.idea/
+.*_cache/
+__pycache__
+*.db
+.coverage
+*.sqlite3
+ads/fixtures/*
