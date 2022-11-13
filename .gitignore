@@ -5,4 +5,5 @@ __pycache__
 *.db
 .coverage
 *.sqlite3
-ads/fixtures/*
+ads/fixtures/ads.json
+ads/fixtures/categories.json
