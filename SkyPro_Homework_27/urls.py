@@ -13,8 +13,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
+
+from SkyPro_Homework_27 import settings
 from ads import views
 
 urlpatterns = [
@@ -26,3 +29,6 @@ urlpatterns = [
     path('cat/<int:pk>/', views.CategoryDetailView.as_view(), name='Category_view'),
     path('ad/<int:pk>/', views.AdDetailView.as_view(), name='Ad_view'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
