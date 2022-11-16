@@ -31,7 +31,7 @@ class AdsView(ListView):
                 "description": ad.description,
                 "category": ad.category.name,
                 "is_published": ad.is_published,
-                "image": str(ad.image),
+                "image": self.object.image.url if self.object.image else None,
             })
 
         return JsonResponse(response, safe=False)
@@ -68,7 +68,7 @@ class AdsView(ListView):
             "description": ad_item.description,
             "category": ad_item.category.name,
             "is_published": ad_item.is_published,
-            "image": str(ad_item.image),
+            "image": self.object.image.url if self.object.image else None,
         })
 
 
@@ -86,7 +86,7 @@ class AdDetailView(DetailView):
             "description": ad.description,
             "category": ad.category.name,
             "is_published": ad.is_published,
-            "image": str(ad.image),
+            "image": self.object.image.url if self.object.image else None,
         })
 
 
@@ -121,7 +121,7 @@ class AdUpdateView(UpdateView):
             "description": self.object.description,
             "is_published": self.object.is_published,
             "category_id": self.object.category.id,
-            "image": str(self.object.image),
+            "image": self.object.image.url if self.object.image else None,
         })
 
 
@@ -134,3 +134,28 @@ class AdDeleteView(DeleteView):
         super().delete(request, *args, **kwargs)
 
         return JsonResponse({"status": "ok"})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AdImageView(UpdateView):
+    model = Ad
+    fields = ['name', 'image']
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.image = request.FILES["image"]
+        self.object.save()
+
+        return JsonResponse({
+            "id": self.object.id,
+            "name": self.object.name,
+            "author_id": self.object.author.id,
+            "author": self.object.author.username,
+            "price": self.object.price,
+            "description": self.object.description,
+            "is_published": self.object.is_published,
+            "category_id": self.object.category.id,
+            "image": self.object.image.url if self.object.image else None,
+        })
+
+
