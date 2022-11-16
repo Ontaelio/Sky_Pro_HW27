@@ -12,10 +12,6 @@ from SkyPro_Homework_27 import settings
 from ads.models import Ad
 
 
-def index(request):
-    return JsonResponse({"status": "ok"})
-
-
 def ad_as_dict(ad: Ad) -> dict:
     return {
         "id": ad.id,
@@ -107,8 +103,8 @@ class AdUpdateView(UpdateView):
         self.object.name = cat_data.get("name", self.object.name)
         self.object.price = cat_data.get("price", self.object.price)
         self.object.description = cat_data.get("description", self.object.description)
-        self.object.author = cat_data.get("author_id", self.object.author)
-        self.object.category = cat_data.get("category_id", self.object.category)
+        self.object.author_id = cat_data.get("author_id", self.object.author_id)
+        self.object.category_id = cat_data.get("category_id", self.object.category_id)
         self.object.is_published = cat_data.get("is_published", self.object.is_published)
         self.object.image = cat_data.get("image", self.object.image)
         self.object.save()
@@ -138,3 +134,7 @@ class AdImageView(UpdateView):
         self.object.save()
 
         return JsonResponse(ad_as_dict(self.object))
+
+
+def index(request):
+    return JsonResponse({"status": "ok"})

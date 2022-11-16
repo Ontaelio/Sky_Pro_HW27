@@ -23,8 +23,9 @@ from ads import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
-    path('cat/', include('ads.cat_urls')),
-    path('ad/', include('ads.ad_urls')),
+    path('cat/', include('ads.urls.cat_urls')),
+    path('ad/', include('ads.urls.ad_urls')),
+    path('user/', include('ads.urls.user_urls'))
 ]
 
 if settings.DEBUG:
