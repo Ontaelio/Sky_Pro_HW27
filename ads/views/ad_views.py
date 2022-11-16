@@ -1,17 +1,34 @@
 import json
 
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, DeleteView, UpdateView
 
+from SkyPro_Homework_27 import settings
 from ads.models import Ad
 
 
 def index(request):
     return JsonResponse({"status": "ok"})
+
+
+def ad_as_dict(ad: Ad) -> dict:
+    return {
+        "id": ad.id,
+        "name": ad.name,
+        "author_id": ad.author.id,
+        "author": ad.author.username,
+        "price": ad.price,
+        "description": ad.description,
+        "is_published": ad.is_published,
+        "category_id": ad.category.id,
+        "category": ad.category.name,
+        "image": ad.image.url if ad.image else None,
+    }
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -20,21 +37,23 @@ class AdsView(ListView):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
+        total_ads = self.object_list.count()
 
-        response = []
-        for ad in self.object_list:
-            response.append({
-                "id": ad.id,
-                "name": ad.name,
-                "price": ad.price,
-                "author": ad.author.username,
-                "description": ad.description,
-                "category": ad.category.name,
-                "is_published": ad.is_published,
-                "image": self.object.image.url if self.object.image else None,
-            })
+        if page_number := request.GET.get("page", None):
+            paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
+        else:
+            paginator = Paginator(self.object_list, total_ads)
+        page_obj = paginator.get_page(page_number) if page_number else paginator.get_page(1)
 
-        return JsonResponse(response, safe=False)
+        ads = []
+        for ad in page_obj:
+            ads.append(ad_as_dict(ad))
+
+        return JsonResponse({
+            "items": ads,
+            "total": page_obj.paginator.count,
+            "num_pages": page_obj.paginator.num_pages,
+        })
 
     def post(self, request):
         ad_data = json.loads(request.body)
@@ -60,16 +79,7 @@ class AdsView(ListView):
 
         ad_item.save()
 
-        return JsonResponse({
-            "id": ad_item.id,
-            "name": ad_item.name,
-            "author": ad_item.author.username,
-            "price": ad_item.price,
-            "description": ad_item.description,
-            "category": ad_item.category.name,
-            "is_published": ad_item.is_published,
-            "image": self.object.image.url if self.object.image else None,
-        })
+        return JsonResponse(ad_as_dict(ad_item))
 
 
 class AdDetailView(DetailView):
@@ -78,16 +88,7 @@ class AdDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         ad = self.get_object()
 
-        return JsonResponse({
-            "id": ad.id,
-            "name": ad.name,
-            "author": ad.author.username,
-            "price": ad.price,
-            "description": ad.description,
-            "category": ad.category.name,
-            "is_published": ad.is_published,
-            "image": self.object.image.url if self.object.image else None,
-        })
+        return JsonResponse(ad_as_dict(ad))
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -112,17 +113,7 @@ class AdUpdateView(UpdateView):
         self.object.image = cat_data.get("image", self.object.image)
         self.object.save()
 
-        return JsonResponse({
-            "id": self.object.id,
-            "name": self.object.name,
-            "author_id": self.object.author.id,
-            "author": self.object.author.username,
-            "price": self.object.price,
-            "description": self.object.description,
-            "is_published": self.object.is_published,
-            "category_id": self.object.category.id,
-            "image": self.object.image.url if self.object.image else None,
-        })
+        return JsonResponse(ad_as_dict(self.object))
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -146,16 +137,4 @@ class AdImageView(UpdateView):
         self.object.image = request.FILES["image"]
         self.object.save()
 
-        return JsonResponse({
-            "id": self.object.id,
-            "name": self.object.name,
-            "author_id": self.object.author.id,
-            "author": self.object.author.username,
-            "price": self.object.price,
-            "description": self.object.description,
-            "is_published": self.object.is_published,
-            "category_id": self.object.category.id,
-            "image": self.object.image.url if self.object.image else None,
-        })
-
-
+        return JsonResponse(ad_as_dict(self.object))
