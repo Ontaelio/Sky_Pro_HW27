@@ -26,16 +26,21 @@ def csv_to_json(csv_file, json_file):
                 row['price'] = float(row['price'])
             if row.get('is_published'):
                 row['is_published'] = True if row['is_published'] == 'TRUE' else False
-            if row.get('category_id'):
-                row['category_id'] = int(row['category_id'])
+            # if row.get('category_id'):
+            #     row['category_id'] = int(row['category_id'])
             if row.get('lat'):
                 row['lat'] = float(row['lat'])
             if row.get('lng'):
                 row['lng'] = float(row['lng'])
             if row.get('age'):
                 row['age'] = int(row['age'])
-            if row.get('location_id'):
-                row['location_id'] = int(row['location_id'])
+            # if row.get('location_id'):
+            #     row['location'] = int(row['location_id'])
+            # if row.get('author_id'):
+            #     row['author'] = int(row['author_id'])
+            # if row.get('category_id'):
+            #     row['category'] = int(row['category_id'])
+
 
             print(row)
 

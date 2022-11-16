@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from SkyPro_Homework_27 import settings
 from ads import views
@@ -23,11 +23,15 @@ from ads import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
-    path('cat/', views.CategoriesView.as_view(), name='Categories_view'),
-    path('ad/', views.AdsView.as_view(), name='Ads_view'),
+    path('cat/', include('ads.cat_urls')),
+    path('ad/', include('ads.ad_urls')),
+    # path('cat/', views.CategoriesView.as_view(), name='Categories_view'),
+    # path('ad/', views.AdsView.as_view(), name='Ads_view'),
 
-    path('cat/<int:pk>/', views.CategoryDetailView.as_view(), name='Category_view'),
-    path('ad/<int:pk>/', views.AdDetailView.as_view(), name='Ad_view'),
+    # path('cat/<int:pk>/', views.CategoryDetailView.as_view(), name='Category_view'),
+    # path('ad/<int:pk>/', views.AdDetailView.as_view(), name='Ad_view'),
+    # path('cat/<int:pk>/update/', views.CategoryUpdateView.as_view(), name='Category_update'),
+    # path('cat/<int:pk>/delete/', views.CategoryDeleteView.as_view(), name='Category_delete'),
 ]
 
 if settings.DEBUG:
