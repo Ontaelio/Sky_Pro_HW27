@@ -33,7 +33,9 @@ class AdsView(ListView):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
+        self.object_list = self.object_list.select_related('author', 'category').order_by('-price')
         total_ads = self.object_list.count()
+        # self.object_list = self.object_list
 
         if page_number := request.GET.get("page", None):
             paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)

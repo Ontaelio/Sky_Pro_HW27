@@ -1,12 +1,15 @@
 import json
 
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.db.models import Count
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, DeleteView, UpdateView
 
-from ads.models import User, Location
+from SkyPro_Homework_27 import settings
+from ads.models import User, Location, Ad
 
 
 def user_as_dict(user: User) -> dict:
@@ -29,12 +32,27 @@ class UsersView(ListView):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
+        self.object_list = self.object_list.select_related('location')
+        #authors_qs = Ad.objects.annotate(ads=Count('author'))
+        total_users = self.object_list.count()
+
+        if page_number := request.GET.get("page", None):
+            paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
+        else:
+            paginator = Paginator(self.object_list, total_users)
+        page_obj = paginator.get_page(page_number) if page_number else paginator.get_page(1)
 
         response = []
-        for user in self.object_list:
-            response.append(user_as_dict(user))
+        for user in page_obj:
+            a = user_as_dict(user)
+            a['total_ads'] = user.ads.filter(is_published=True).count()
+            response.append(a)
 
-        return JsonResponse(response, safe=False)
+        return JsonResponse({
+            "items": response,
+            "total": page_obj.paginator.count,
+            "num_pages": page_obj.paginator.num_pages,
+        })
 
     def post(self, request):
         user_data = json.loads(request.body)

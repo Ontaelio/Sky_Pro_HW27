@@ -45,11 +45,12 @@ class User(models.Model):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        ordering = ['username']
 
 
 class Ad(models.Model):
     name = models.CharField(max_length=100)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    author = models.ForeignKey(User, related_name='ads', on_delete=models.CASCADE, null=True)
     price = models.DecimalField(max_digits=9, decimal_places=2)
     description = models.CharField(max_length=2000, blank=True)
     image = models.ImageField(upload_to='images/', blank=True, null=True)
