@@ -2,8 +2,9 @@ import json
 
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Count
+from django.db.models import Count, IntegerField, When, Case
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, DeleteView, UpdateView
@@ -33,19 +34,22 @@ class UsersView(ListView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         self.object_list = self.object_list.select_related('location')
-        #authors_qs = Ad.objects.annotate(ads=Count('author'))
         total_users = self.object_list.count()
+        users_qs = self.object_list.annotate(total_ads=Count(Case(
+            When(ads__is_published=True, then=1),
+            output_filed=IntegerField()
+        )))
 
         if page_number := request.GET.get("page", None):
-            paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
+            paginator = Paginator(users_qs, settings.TOTAL_ON_PAGE)
         else:
-            paginator = Paginator(self.object_list, total_users)
+            paginator = Paginator(users_qs, total_users)
         page_obj = paginator.get_page(page_number) if page_number else paginator.get_page(1)
 
         response = []
         for user in page_obj:
             a = user_as_dict(user)
-            a['total_ads'] = user.ads.filter(is_published=True).count()
+            a['total_ads'] = user.total_ads
             response.append(a)
 
         return JsonResponse({
@@ -68,7 +72,8 @@ class UsersView(ListView):
 
         user_item.last_name = user_data.get("last_name", "")
         user_item.age = user_data.get("age", None)
-        user_item.location_id = user_data.get("location_id", None)
+        # user_item.location_id = user_data.get("location_id", None)
+        user_item.location, created = Location.objects.get_or_create(name=user_data.get('location', 'Москва, Красная пл.'))
 
         try:
             user_item.full_clean()
@@ -85,6 +90,7 @@ class UserDetailView(DetailView):
 
     def get(self, request, *args, **kwargs):
         user = self.get_object()
+        # user = get_object_or_404()
 
         return JsonResponse(user_as_dict(user))
 
@@ -102,7 +108,9 @@ class UserUpdateView(UpdateView):
         self.object.last_name = user_data.get("last_name", self.object.last_name)
         self.object.username = user_data.get("username", self.object.username)
         self.object.password = user_data.get("password", self.object.password)
-        self.object.location_id = user_data.get("location_id", self.object.location_id)
+        #self.object.location_id = user_data.get("location_id", self.object.location_id)
+        if 'location' in user_data.keys():
+            self.object.location, created = Location.objects.update_or_create(name=user_data['location'])
         self.object.role = user_data.get("role", self.object.role)
         self.object.age = user_data.get("age", self.object.age)
         self.object.save()
