@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, DeleteView, UpdateView
 
 from SkyPro_Homework_27 import settings
-from ads.models import Ad
+from ads.models import Ad, Tag
 
 
 def ad_as_dict(ad: Ad) -> dict:
@@ -24,6 +24,7 @@ def ad_as_dict(ad: Ad) -> dict:
         "category_id": ad.category.id,
         "category": ad.category.name,
         "image": ad.image.url if ad.image else None,
+        "tags": list(map(str, ad.tags.all()))
     }
 
 
@@ -33,9 +34,14 @@ class AdsView(ListView):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        self.object_list = self.object_list.select_related('author', 'category').order_by('-price')
+        self.object_list = self.object_list.select_related('author', 'category').prefetch_related('tags').order_by('-price')
+
+        if tag := request.GET.get("tag", None):
+            self.object_list = self.object_list.filter(tags__name__contains=tag)
+
         total_ads = self.object_list.count()
-        # self.object_list = self.object_list
+        if not total_ads:
+            return JsonResponse({'error': 'no ads found'}, status=404)
 
         if page_number := request.GET.get("page", None):
             paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
@@ -67,7 +73,7 @@ class AdsView(ListView):
             return JsonResponse({'error': 'invalid JSON data'}, status=400)
 
         ad_item.description = ad_data.get("description", "")
-        ad_item.image = ad_data.get("image", None)
+        # ad_item.image = ad_data.get("image", None)
         ad_item.is_published = False
 
         try:
@@ -76,6 +82,11 @@ class AdsView(ListView):
             return JsonResponse(e.message_dict, status=422)
 
         ad_item.save()
+
+        if tags := ad_data.get("tags"):
+            for tag in tags:
+                t, created = Tag.objects.get_or_create(name=tag)
+                ad_item.tags.add(t)
 
         return JsonResponse(ad_as_dict(ad_item))
 
@@ -96,20 +107,27 @@ class AdUpdateView(UpdateView):
 
     def patch(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
-        cat_data = json.loads(request.body)
+        ad_data = json.loads(request.body)
 
-        # if name := cat_data.get("name", None):
+        # if name := ad_data.get("name", None):
         #     self.object.name = name
         #     self.object.save()
 
-        self.object.name = cat_data.get("name", self.object.name)
-        self.object.price = cat_data.get("price", self.object.price)
-        self.object.description = cat_data.get("description", self.object.description)
-        self.object.author_id = cat_data.get("author_id", self.object.author_id)
-        self.object.category_id = cat_data.get("category_id", self.object.category_id)
-        self.object.is_published = cat_data.get("is_published", self.object.is_published)
-        self.object.image = cat_data.get("image", self.object.image)
+        self.object.name = ad_data.get("name", self.object.name)
+        self.object.price = ad_data.get("price", self.object.price)
+        self.object.description = ad_data.get("description", self.object.description)
+        self.object.author_id = ad_data.get("author_id", self.object.author_id)
+        self.object.category_id = ad_data.get("category_id", self.object.category_id)
+        self.object.is_published = ad_data.get("is_published", self.object.is_published)
+        # self.object.image = ad_data.get("image", self.object.image)
         self.object.save()
+
+        # tags can be cleared with an empty list
+        if "tags" in ad_data.keys():
+            self.object.tags.clear()
+            for tag in ad_data.get('tags'):
+                t, created = Tag.objects.get_or_create(name=tag)
+                self.object.tags.add(t)
 
         return JsonResponse(ad_as_dict(self.object))
 
