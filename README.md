@@ -1,4 +1,4 @@
-*Домашка 28*
+*Домашка 29*
 
 https://skyengpublic.notion.site/28-Postgres-relations-QuerySet-7a440f26dd914d67ab788093f5a158e3
  

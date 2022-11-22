@@ -58,6 +58,10 @@ class User(models.Model):
         verbose_name_plural = 'Пользователи'
         ordering = ['username']
 
+    @property
+    def location_txt(self):
+        return self.location.name if self.location else None
+
 
 class Ad(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название')
