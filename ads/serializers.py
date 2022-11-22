@@ -3,6 +3,12 @@ from rest_framework import serializers
 from ads.models import User, Location
 
 
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = '__all__'
+
+
 class UserListSerializer(serializers.ModelSerializer):
     location = serializers.CharField(max_length=150)
     location_id = serializers.IntegerField()
