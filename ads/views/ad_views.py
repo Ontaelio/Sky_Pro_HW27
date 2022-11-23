@@ -10,6 +10,7 @@ from django.views.generic import ListView, DetailView, DeleteView, UpdateView
 
 from SkyPro_Homework_27 import settings
 from ads.models import Ad, Tag
+from ads.views.ad_filters import AD_FILTERS
 
 
 def ad_as_dict(ad: Ad) -> dict:
@@ -31,26 +32,12 @@ def ad_as_dict(ad: Ad) -> dict:
 
 def filter_ads(ads_list, request):
 
-    if r_get := request.GET.get("tag", None):
-        ads_list = ads_list.filter(tags__name__contains=r_get)
-
-    if r_get := request.GET.get("cat", None):
-        ads_list = ads_list.filter(category__id=r_get)
-
-    if r_get := request.GET.get("text", None):
-        ads_list = ads_list.filter(name__icontains=r_get)
-
-    if r_get := request.GET.get("location", None):
-        ads_list = ads_list.filter(author__location__name__icontains=r_get)
-
-    if r_get := request.GET.get("price_from", None):
-        ads_list = ads_list.filter(price__gte=r_get)
-
-    if r_get := request.GET.get("price_to", None):
-        ads_list = ads_list.filter(price__lte=r_get)
+    for r_field in AD_FILTERS.keys():
+        if r_get := request.GET.get(r_field, None):
+            ads_list = ads_list.filter(**{AD_FILTERS[r_field]: r_get})
 
     return ads_list
-    
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AdsView(ListView):
@@ -58,7 +45,8 @@ class AdsView(ListView):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        self.object_list = self.object_list.select_related('author', 'author__location', 'category').prefetch_related('tags').order_by('-price')
+        self.object_list = self.object_list.select_related('author', 'author__location', 'category').prefetch_related(
+            'tags').order_by('-price')
 
         self.object_list = filter_ads(self.object_list, request)
 
