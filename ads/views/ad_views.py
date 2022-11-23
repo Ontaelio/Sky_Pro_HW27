@@ -10,6 +10,7 @@ from django.views.generic import ListView, DetailView, DeleteView, UpdateView
 
 from SkyPro_Homework_27 import settings
 from ads.models import Ad, Tag
+from ads.views.ad_filters import AD_FILTERS
 
 
 def ad_as_dict(ad: Ad) -> dict:
@@ -24,8 +25,18 @@ def ad_as_dict(ad: Ad) -> dict:
         "category_id": ad.category.id,
         "category": ad.category.name,
         "image": ad.image.url if ad.image else None,
-        "tags": list(map(str, ad.tags.all()))
+        "tags": list(map(str, ad.tags.all())),
+        "location": ad.author.location.name,
     }
+
+
+def filter_ads(ads_list, request):
+
+    for r_field in AD_FILTERS.keys():
+        if r_get := request.GET.get(r_field, None):
+            ads_list = ads_list.filter(**{AD_FILTERS[r_field]: r_get})
+
+    return ads_list
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -34,10 +45,10 @@ class AdsView(ListView):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        self.object_list = self.object_list.select_related('author', 'category').prefetch_related('tags').order_by('-price')
+        self.object_list = self.object_list.select_related('author', 'author__location', 'category').prefetch_related(
+            'tags').order_by('-price')
 
-        if tag := request.GET.get("tag", None):
-            self.object_list = self.object_list.filter(tags__name__contains=tag)
+        self.object_list = filter_ads(self.object_list, request)
 
         total_ads = self.object_list.count()
         if not total_ads:

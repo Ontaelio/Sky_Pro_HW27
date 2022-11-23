@@ -34,6 +34,7 @@ class Location(models.Model):
     class Meta:
         verbose_name = 'Адрес'
         verbose_name_plural = 'Адреса'
+        ordering = ['id']
 
 
 class User(models.Model):
@@ -57,6 +58,10 @@ class User(models.Model):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ['username']
+
+    @property
+    def location_txt(self):
+        return self.location.name if self.location else None
 
 
 class Ad(models.Model):

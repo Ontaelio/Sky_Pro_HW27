@@ -10,3 +10,4 @@ ads/fixtures/category.json
 ads/fixtures/location.json
 ads/fixtures/user.json
 media/
+bak_*.*
