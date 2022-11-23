@@ -24,7 +24,8 @@ def ad_as_dict(ad: Ad) -> dict:
         "category_id": ad.category.id,
         "category": ad.category.name,
         "image": ad.image.url if ad.image else None,
-        "tags": list(map(str, ad.tags.all()))
+        "tags": list(map(str, ad.tags.all())),
+        "location": ad.author.location.name,
     }
 
 
@@ -38,6 +39,21 @@ class AdsView(ListView):
 
         if tag := request.GET.get("tag", None):
             self.object_list = self.object_list.filter(tags__name__contains=tag)
+
+        if cat := request.GET.get("cat", None):
+            self.object_list = self.object_list.filter(category__id=cat)
+
+        if text := request.GET.get("text", None):
+            self.object_list = self.object_list.filter(name__icontains=text)
+
+        if location := request.GET.get("location", None):
+            self.object_list = self.object_list.filter(author__location__name__icontains=location)
+
+        if price_min := request.GET.get("price_from", None):
+            self.object_list = self.object_list.filter(price__gte=price_min)
+
+        if price_max := request.GET.get("price_to", None):
+            self.object_list = self.object_list.filter(price__lte=price_max)
 
         total_ads = self.object_list.count()
         if not total_ads:
