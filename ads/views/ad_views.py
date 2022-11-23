@@ -29,31 +29,38 @@ def ad_as_dict(ad: Ad) -> dict:
     }
 
 
+def filter_ads(ads_list, request):
+
+    if r_get := request.GET.get("tag", None):
+        ads_list = ads_list.filter(tags__name__contains=r_get)
+
+    if r_get := request.GET.get("cat", None):
+        ads_list = ads_list.filter(category__id=r_get)
+
+    if r_get := request.GET.get("text", None):
+        ads_list = ads_list.filter(name__icontains=r_get)
+
+    if r_get := request.GET.get("location", None):
+        ads_list = ads_list.filter(author__location__name__icontains=r_get)
+
+    if r_get := request.GET.get("price_from", None):
+        ads_list = ads_list.filter(price__gte=r_get)
+
+    if r_get := request.GET.get("price_to", None):
+        ads_list = ads_list.filter(price__lte=r_get)
+
+    return ads_list
+    
+
 @method_decorator(csrf_exempt, name='dispatch')
 class AdsView(ListView):
     model = Ad
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        self.object_list = self.object_list.select_related('author', 'category').prefetch_related('tags').order_by('-price')
+        self.object_list = self.object_list.select_related('author', 'author__location', 'category').prefetch_related('tags').order_by('-price')
 
-        if tag := request.GET.get("tag", None):
-            self.object_list = self.object_list.filter(tags__name__contains=tag)
-
-        if cat := request.GET.get("cat", None):
-            self.object_list = self.object_list.filter(category__id=cat)
-
-        if text := request.GET.get("text", None):
-            self.object_list = self.object_list.filter(name__icontains=text)
-
-        if location := request.GET.get("location", None):
-            self.object_list = self.object_list.filter(author__location__name__icontains=location)
-
-        if price_min := request.GET.get("price_from", None):
-            self.object_list = self.object_list.filter(price__gte=price_min)
-
-        if price_max := request.GET.get("price_to", None):
-            self.object_list = self.object_list.filter(price__lte=price_max)
+        self.object_list = filter_ads(self.object_list, request)
 
         total_ads = self.object_list.count()
         if not total_ads:
