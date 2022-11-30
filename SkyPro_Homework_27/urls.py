@@ -20,14 +20,14 @@ from rest_framework import routers
 
 from SkyPro_Homework_27 import settings
 from ads import views
-from ads.views import LocationViewSet
+from authentication.views import LocationViewSet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
     path('cat/', include('ads.urls.cat_urls')),
     path('ad/', include('ads.urls.ad_urls')),
-    path('user/', include('ads.urls.user_urls'))
+    path('user/', include('authentication.urls'))
 ]
 
 router = routers.SimpleRouter()
