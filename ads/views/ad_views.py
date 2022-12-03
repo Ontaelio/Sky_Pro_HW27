@@ -1,12 +1,15 @@
 import json
 
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, DeleteView, UpdateView
+from rest_framework.decorators import permission_classes, api_view
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAuthenticated
 
 from SkyPro_Homework_27 import settings
 from ads.models import Ad, Tag
@@ -42,6 +45,7 @@ def filter_ads(ads_list, request):
 @method_decorator(csrf_exempt, name='dispatch')
 class AdsView(ListView):
     model = Ad
+    permission_required = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
@@ -102,13 +106,12 @@ class AdsView(ListView):
         return JsonResponse(ad_as_dict(ad_item))
 
 
-class AdDetailView(DetailView):
-    model = Ad
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ad_detail_view(request, ad_num):
+    ad = Ad.objects.get(pk=ad_num)
 
-    def get(self, request, *args, **kwargs):
-        ad = self.get_object()
-
-        return JsonResponse(ad_as_dict(ad))
+    return JsonResponse(ad_as_dict(ad))
 
 
 @method_decorator(csrf_exempt, name='dispatch')
