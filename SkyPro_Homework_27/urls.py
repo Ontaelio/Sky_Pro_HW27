@@ -27,7 +27,8 @@ urlpatterns = [
     path('', views.index),
     path('cat/', include('ads.urls.cat_urls')),
     path('ad/', include('ads.urls.ad_urls')),
-    path('user/', include('authentication.urls'))
+    path('user/', include('authentication.urls')),
+    path('selection/', include('ads.urls.selection_urls'))
 ]
 
 router = routers.SimpleRouter()

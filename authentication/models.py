@@ -38,4 +38,3 @@ class User(AbstractUser):
     @property
     def location_txt(self):
         return self.location.name if self.location else None
-
