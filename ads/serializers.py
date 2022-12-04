@@ -16,6 +16,8 @@ class SelectionListSerializer(serializers.ModelSerializer):
 
 
 class SelectionCreateSerializer(serializers.ModelSerializer):
+    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Selection
         fields = '__all__'
