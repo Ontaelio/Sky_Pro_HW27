@@ -41,3 +41,15 @@ class SelectionDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Selection
         fields = ['id']
+        
+        
+class AdUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ad
+        fields = '__all__'
+
+
+class AdDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ad
+        fields = ['id']

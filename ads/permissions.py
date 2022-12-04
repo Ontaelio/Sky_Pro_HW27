@@ -10,3 +10,15 @@ class SelectionEditPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.user == obj.owner
 
+
+class AdEditPermission(permissions.BasePermission):
+    message = "Deleting and editing an ad can be done only by it's author or admin/mod."
+
+    def has_permission(self, request, view):
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.role in ['admin', 'moderator']:
+            return True
+        return request.user == obj.owner
+
