@@ -1,6 +1,6 @@
-*Домашка 29*
+*Домашка 27-30*
 
-https://skyengpublic.notion.site/28-Postgres-relations-QuerySet-7a440f26dd914d67ab788093f5a158e3
+https://skyengpublic.notion.site/30-925d9049c08f4a79a97d28c32713b6ce
  
 1) Запуск csv2json.py конвертирует CSV фалы в JSON фикстуры.
 2) Накатить миграции, а затем наполнить базу:

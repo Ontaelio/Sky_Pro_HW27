@@ -47,7 +47,7 @@ class Ad(models.Model):
 class Selection(models.Model):
     name = models.CharField(max_length=50, verbose_name='Название')
     owner = models.ForeignKey(User, related_name='selections', on_delete=models.CASCADE, verbose_name='Владелец')
-    items = models.ManyToManyField(Ad, null=True, verbose_name='Объявления')
+    items = models.ManyToManyField(Ad, verbose_name='Объявления')
 
     def __str__(self):
         return self.name
