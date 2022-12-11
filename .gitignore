@@ -7,7 +7,7 @@ __pycache__
 *.sqlite3
 ads/fixtures/ad.json
 ads/fixtures/category.json
-ads/fixtures/location.json
-ads/fixtures/user.json
+authentication/fixtures/location.json
+authentication/fixtures/user.json
 media/
 bak_*.*

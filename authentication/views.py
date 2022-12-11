@@ -1,21 +1,9 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
+from rest_framework.viewsets import ModelViewSet
 
-from ads.models import User
-from ads.serializers import UserListSerializer, UserCreateSerializer, UserUpdateSerializer, UserDeleteSerializer
-
-
-# def user_as_dict(user: User) -> dict:
-#     return {
-#         "id": user.id,
-#         "first_name": user.first_name,
-#         "last_name": user.last_name,
-#         "username": user.username,
-#         "password": user.password,
-#         "role": user.role,
-#         "age": user.age,
-#         "location_id": user.location_id,
-#         "location": user.location.name if user.location else None,
-#     }
+from authentication.models import User, Location
+from authentication.serializers import UserListSerializer, UserCreateSerializer, UserUpdateSerializer, \
+    UserDeleteSerializer, LocationSerializer
 
 
 class UsersView(ListAPIView):
@@ -41,4 +29,11 @@ class UserUpdateView(UpdateAPIView):
 class UserDeleteView(DestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserDeleteSerializer
+
+
+class LocationViewSet(ModelViewSet):
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer
+
+
 

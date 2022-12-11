@@ -57,5 +57,5 @@ def csv_to_json(csv_file, json_file):
 if __name__ == "__main__":
     csv_to_json('datasets/ad.csv', 'ads/fixtures/ad.json')
     csv_to_json('datasets/category.csv', 'ads/fixtures/category.json')
-    csv_to_json('datasets/user.csv', 'ads/fixtures/user.json')
-    csv_to_json('datasets/location.csv', 'ads/fixtures/location.json')
+    csv_to_json('datasets/user.csv', 'authentication/fixtures/user.json')
+    csv_to_json('datasets/location.csv', 'authentication/fixtures/location.json')

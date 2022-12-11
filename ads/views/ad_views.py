@@ -1,15 +1,21 @@
 import json
 
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, DeleteView, UpdateView
+from rest_framework.decorators import permission_classes, api_view
+from rest_framework.generics import ListAPIView, UpdateAPIView, DestroyAPIView
+from rest_framework.permissions import IsAuthenticated
 
 from SkyPro_Homework_27 import settings
 from ads.models import Ad, Tag
+from ads.permissions import AdEditPermission
+from ads.serializers import AdUpdateSerializer, AdDeleteSerializer
 from ads.views.ad_filters import AD_FILTERS
 
 
@@ -42,6 +48,7 @@ def filter_ads(ads_list, request):
 @method_decorator(csrf_exempt, name='dispatch')
 class AdsView(ListView):
     model = Ad
+    permission_required = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
@@ -102,57 +109,25 @@ class AdsView(ListView):
         return JsonResponse(ad_as_dict(ad_item))
 
 
-class AdDetailView(DetailView):
-    model = Ad
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ad_detail_view(request, ad_num):
+    ad = Ad.objects.get(pk=ad_num)
 
-    def get(self, request, *args, **kwargs):
-        ad = self.get_object()
-
-        return JsonResponse(ad_as_dict(ad))
-
-
-@method_decorator(csrf_exempt, name='dispatch')
-class AdUpdateView(UpdateView):
-    model = Ad
-    fields = ['name', 'price', 'description', 'is_published', 'author', 'category']
-
-    def patch(self, request, *args, **kwargs):
-        super().post(request, *args, **kwargs)
-        ad_data = json.loads(request.body)
-
-        # if name := ad_data.get("name", None):
-        #     self.object.name = name
-        #     self.object.save()
-
-        self.object.name = ad_data.get("name", self.object.name)
-        self.object.price = ad_data.get("price", self.object.price)
-        self.object.description = ad_data.get("description", self.object.description)
-        self.object.author_id = ad_data.get("author_id", self.object.author_id)
-        self.object.category_id = ad_data.get("category_id", self.object.category_id)
-        self.object.is_published = ad_data.get("is_published", self.object.is_published)
-        # self.object.image = ad_data.get("image", self.object.image)
-        self.object.save()
-
-        # tags can be cleared with an empty list
-        if "tags" in ad_data.keys():
-            self.object.tags.clear()
-            for tag in ad_data.get('tags'):
-                t, created = Tag.objects.get_or_create(name=tag)
-                self.object.tags.add(t)
-
-        return JsonResponse(ad_as_dict(self.object))
+    return JsonResponse(ad_as_dict(ad))
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class AdDeleteView(DeleteView):
-    model = Ad
-    success_url = "/"
+class AdUpdateView(UpdateAPIView):
+    queryset = Ad.objects.all()
+    serializer_class = AdUpdateSerializer
+    permission_classes = [IsAuthenticated, AdEditPermission]
 
-    def delete(self, request, *args, **kwargs):
-        super().delete(request, *args, **kwargs)
 
-        return JsonResponse({"status": "ok"})
-
+class AdDeleteView(DestroyAPIView):
+    queryset = Ad.objects.all()
+    serializer_class = AdDeleteSerializer
+    permission_classes = [IsAuthenticated, AdEditPermission]
+    
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AdImageView(UpdateView):

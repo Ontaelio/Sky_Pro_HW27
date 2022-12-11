@@ -1,69 +1,55 @@
 from rest_framework import serializers
 
-from ads.models import User, Location
+from ads.models import Selection, Ad
 
 
-class LocationSerializer(serializers.ModelSerializer):
+class AdDetailSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Location
+        model = Ad
         fields = '__all__'
 
 
-class UserListSerializer(serializers.ModelSerializer):
-    location = serializers.CharField(max_length=150)
-    location_id = serializers.IntegerField()
+class SelectionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Selection
+        fields = ['id', 'name']
+
+
+class SelectionCreateSerializer(serializers.ModelSerializer):
+    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        model = User
+        model = Selection
         fields = '__all__'
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
-    location = serializers.SlugRelatedField(
-        required=False,
-        queryset=Location.objects.all(),
-        slug_field='name'
-    )
+class SelectionDetailSerializer(serializers.ModelSerializer):
+    items = AdDetailSerializer(read_only=True, many=True)
 
     class Meta:
-        model = User
+        model = Selection
         fields = '__all__'
 
-    def is_valid(self, raise_exception=False):
-        self._location = self.initial_data.pop('location', 'Москва, Красная пл.')
-        return super().is_valid(raise_exception=raise_exception)
 
-    def create(self, validated_data):
-        user = User.objects.create(**validated_data)
-        user.location, _ = Location.objects.get_or_create(name=self._location)
-        user.save()
-        return user
-
-
-class UserUpdateSerializer(serializers.ModelSerializer):
-    location = serializers.SlugRelatedField(
-        required=False,
-        queryset=Location.objects.all(),
-        slug_field='name'
-    )
-
+class SelectionUpdateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = Selection
         fields = '__all__'
 
-    def is_valid(self, raise_exception=False):
-        self._location = self.initial_data.pop('location', None)
-        return super().is_valid(raise_exception=raise_exception)
 
-    def save(self):
-        user = super().save()
-        if self._location:
-            user.location, _ = Location.objects.update_or_create(name=self._location)
-            user.save()
-        return user
-
-
-class UserDeleteSerializer(serializers.ModelSerializer):
+class SelectionDeleteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = Selection
+        fields = ['id']
+        
+        
+class AdUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ad
+        fields = '__all__'
+
+
+class AdDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ad
         fields = ['id']
