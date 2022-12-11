@@ -22,6 +22,7 @@ class CategoriesView(ListView):
             response.append({
                 "id": category.id,
                 "name": category.name,
+                "slug": category.slug,
             })
 
         return JsonResponse(response, safe=False)
@@ -34,6 +35,10 @@ class CategoriesView(ListView):
         if not cat_item.name:
             return JsonResponse({'error': 'name expected'}, status=400)
 
+        cat_item.slug = cat_data.get("slug", None)
+        if not cat_item.slug:
+            return JsonResponse({'error': 'slug expected'}, status=400)
+
         try:
             cat_item.full_clean()
         except ValidationError as e:
@@ -44,6 +49,7 @@ class CategoriesView(ListView):
         return JsonResponse({
             "id": cat_item.id,
             "name": cat_item.name,
+            "slug": cat_item.slug,
         })
 
 

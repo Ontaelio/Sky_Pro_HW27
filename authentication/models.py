@@ -1,5 +1,14 @@
+from datetime import date
+
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
+
+
+def check_birth_date(value: date):
+    if (value.year + 8, value.month, value.day) > (date.today().year, date.today().month, date.today().day):
+        raise ValidationError('Must be at least 8 years of age to register')
+    #return value
 
 
 class Location(models.Model):
@@ -26,6 +35,7 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, default='member', verbose_name='Роль', choices=ROLES)
     age = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='Возраст')
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Место')
+    birth_date = models.DateField(validators=[check_birth_date])
 
     def __str__(self):
         return self.username
