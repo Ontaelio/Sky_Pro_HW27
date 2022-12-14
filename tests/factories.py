@@ -73,12 +73,11 @@ class AdFactory(factory.django.DjangoModelFactory):
         model = Ad
 
     name = factory.Faker('text', locale='ru_RU', max_nb_chars=100)
-    description = factory.Faker('text', locale='ru_RU', max_nb_chars=2000)
+    description = factory.Faker('text', locale='ru_RU', max_nb_chars=20)
     author = factory.SubFactory(UserFactory)
     category = factory.SubFactory(CategoryFactory)
     price = factory.Faker('pydecimal', right_digits=2, positive=True, max_value=200000)
     is_published = False
-    # tags = factory.SubFactory(TagFactory)
     image = None
 
     @factory.post_generation

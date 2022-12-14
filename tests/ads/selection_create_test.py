@@ -16,7 +16,7 @@ def test_create(client, new_user_and_token):
     expected_response = {
         "id": 'unknown_yet',
         "name": "test selection",
-        "items": selection_data["items"]
+        "items": sorted(selection_data["items"])
     }
 
     response = client.post(
@@ -35,5 +35,6 @@ def test_create(client, new_user_and_token):
     )
 
     assert response.status_code == 201
-    expected_response["id"] = response.data["id"]
-    assert response.data == expected_response
+    assert response.data["name"] == expected_response["name"]
+    assert sorted(response.data["items"]) == expected_response["items"]
+

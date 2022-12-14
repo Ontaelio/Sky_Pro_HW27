@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import AnonymousUser
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -25,7 +25,7 @@ def ad_as_dict(ad: Ad) -> dict:
         "name": ad.name,
         "author_id": ad.author.id,
         "author": ad.author.username,
-        "price": ad.price,
+        "price": str(ad.price),
         "description": ad.description,
         "is_published": ad.is_published,
         "category_id": ad.category.id,
@@ -112,7 +112,10 @@ class AdsView(ListView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def ad_detail_view(request, ad_num):
-    ad = Ad.objects.get(pk=ad_num)
+    try:
+        ad = Ad.objects.get(pk=ad_num)
+    except ObjectDoesNotExist:
+        return JsonResponse({"error": f"Item {ad_num} not found"}, status=404)
 
     return JsonResponse(ad_as_dict(ad))
 
