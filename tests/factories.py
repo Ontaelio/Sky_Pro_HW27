@@ -1,7 +1,7 @@
 import factory.django
 import faker.providers.internet.en_US
 
-from ads.models import Tag, Category, Ad
+from ads.models import Tag, Category, Ad, Selection
 from authentication.models import Location, User
 
 
@@ -89,6 +89,26 @@ class AdFactory(factory.django.DjangoModelFactory):
         if extracted:
             for tag in extracted:
                 self.tags.add(tag)
+
+
+class SelectionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Selection
+
+    name = "test selection"
+    owner = factory.SubFactory(UserFactory)
+
+    @factory.post_generation
+    def items(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for item in extracted:
+                self.items.add(item)
+
+
+
 
 
 

@@ -37,7 +37,7 @@ class User(AbstractUser):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Место')
     birth_date = models.DateField(validators=[check_birth_date])
     email = models.EmailField(max_length=254, unique=True,
-                              validators=[RegexValidator(regex=r"^(?i)[A-Za-z0-9._%+-]+@rambler\.ru$", inverse_match=True)])
+                              validators=[RegexValidator(regex=r"(?i)^[A-Za-z0-9._%+-]+@rambler\.ru$", inverse_match=True)])
 
     def __str__(self):
         return self.username

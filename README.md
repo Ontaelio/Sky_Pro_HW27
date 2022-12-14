@@ -1,6 +1,6 @@
 *Домашка 27-30*
 
-https://skyengpublic.notion.site/30-925d9049c08f4a79a97d28c32713b6ce
+30: https://skyengpublic.notion.site/30-925d9049c08f4a79a97d28c32713b6ce
  
 1) Запуск csv2json.py конвертирует CSV фалы в JSON фикстуры.
 2) Накатить миграции, а затем наполнить базу:
